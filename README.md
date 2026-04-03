@@ -1,7 +1,7 @@
 # PIA — Personal Investment Agent
 > Live AI trading agent that executes a user-authored investment thesis every Monday morning via the Alpaca brokerage API, powered by Anthropic Claude. Not a demo. Runs on real infrastructure with real money.
 
-**Live:** [didimdigital.com/pia](https://didimdigital.com/pia) · **Dashboard:** [didimdigital.com/pia-dashboard](https://didimdigital.com/pia-dashboard) · **Built by:** Robin Colocho · **Status:** Live (Paper Trading)
+*Live:* [didimdigital.com/pia](https://didimdigital.com/pia) · **Dashboard:** [didimdigital.com/pia-dashboard](https://didimdigital.com/pia-dashboard) · **Built by:** Robin Colocho · **Status:** Live (Paper Trading)
 
 ---
 
