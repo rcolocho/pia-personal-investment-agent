@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PIA — Personal Investment Agent · Didim Digital</title>
+<meta name="description" content="An autonomous AI investment agent that executes your plain-English thesis every week. Built on Claude API and Alpaca Markets. Live demo by Robin Colocho."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --navy:#0d1b2e;--navy2:#142038;--navy3:#1a2d4a;
+  --blue:#1a56db;--blue2:#2563eb;--blue3:#3b82f6;--blue-light:#eff6ff;
+  --green:#10b981;--green-dark:#15803d;--green-bg:#f0fdf4;
+  --amber:#f59e0b;--amber-bg:#fffbeb;
+  --red:#ef4444;--red-bg:#fef2f2;
+  --text:#0f172a;--text2:#334155;--text3:#64748b;--text4:#94a3b8;
+  --border:#e2e8f0;--border2:#cbd5e1;
+  --white:#ffffff;--bg:#f8fafc;--bg2:#f1f5f9;
+  --shadow:0 4px 16px rgba(0,0,0,.06);
+  --shadow-lg:0 20px 48px rgba(0,0,0,.1);
+  --radius:12px;--radius-lg:16px;
+  --font:'DM Sans',sans-serif;
+  --font-display:'Playfair Display',serif;
+  --font-mono:'DM Mono',monospace;
+}
+html{scroll-behavior:smooth;}
+body{font-family:var(--font);background:var(--white);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased;}
+a{text-decoration:none;color:inherit;}
+
+/* ── Nav ── */
+.nav{position:sticky;top:0;z-index:200;background:rgba(255,255,255,.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);height:60px;display:flex;align-items:center;}
+.nav-inner{max-width:1200px;margin:0 auto;width:100%;padding:0 28px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:var(--navy);}
+.nav-icon{width:32px;height:32px;background:var(--navy);border-radius:7px;display:flex;align-items:center;justify-content:center;}
+.nav-icon svg{width:16px;height:16px;}
+.nav-sub{font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--text3);display:block;margin-top:-2px;}
+.nav-back{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:5px;padding:6px 10px;border-radius:7px;border:1px solid var(--border);transition:all .15s;}
+.nav-back:hover{color:var(--navy);border-color:var(--border2);}
+.nav-r{display:flex;align-items:center;gap:10px;}
+.nav-cta{background:var(--blue2);color:var(--white);font-size:13px;font-weight:600;padding:8px 18px;border-radius:8px;transition:background .15s;}
+.nav-cta:hover{background:#1d4ed8;}
+.live-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--green-dark);background:var(--green-bg);border:1px solid #86efac;border-radius:999px;padding:3px 10px;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── Hero ── */
+.hero{background:var(--navy);padding:80px 0 72px;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.03) 1px,transparent 1px);background-size:28px 28px;pointer-events:none;}
+.hero-inner{max-width:1200px;margin:0 auto;padding:0 28px;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
+.hero-tag{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--blue3);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.hero-tag::before{content:'';width:24px;height:2px;background:var(--blue3);border-radius:1px;}
+.hero h1{font-family:var(--font-display);font-size:clamp(36px,4vw,52px);font-weight:700;color:var(--white);line-height:1.1;letter-spacing:-.5px;margin-bottom:18px;}
+.hero h1 em{font-style:normal;color:var(--blue3);}
+.hero-lead{font-size:16px;color:rgba(255,255,255,.65);line-height:1.7;margin-bottom:28px;max-width:46ch;}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;}
+.btn-hero{display:inline-flex;align-items:center;gap:8px;background:var(--blue2);color:var(--white);font-family:var(--font);font-size:14px;font-weight:600;padding:13px 24px;border-radius:10px;border:none;cursor:pointer;transition:all .15s;}
+.btn-hero:hover{background:#1d4ed8;transform:translateY(-1px);box-shadow:0 8px 24px rgba(37,99,235,.4);}
+.btn-ghost{background:transparent;color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.2);font-family:var(--font);font-size:14px;font-weight:500;padding:13px 24px;border-radius:10px;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:8px;}
+.btn-ghost:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.35);}
+
+/* ── Hero right — terminal mockup ── */
+.terminal{background:#0a0f1a;border:1px solid rgba(255,255,255,.1);border-radius:var(--radius-lg);overflow:hidden;font-family:var(--font-mono);font-size:12px;}
+.terminal-bar{background:#1a2236;padding:10px 14px;display:flex;align-items:center;gap:6px;border-bottom:1px solid rgba(255,255,255,.06);}
+.t-dot{width:10px;height:10px;border-radius:50%;}
+.terminal-body{padding:18px 16px;line-height:1.8;}
+.t-comment{color:#4a6080;}
+.t-key{color:#60a5fa;}
+.t-val{color:#34d399;}
+.t-str{color:#fbbf24;}
+.t-num{color:#a78bfa;}
+.t-label{color:rgba(255,255,255,.35);font-size:10px;letter-spacing:.08em;text-transform:uppercase;margin-top:10px;margin-bottom:4px;display:block;}
+.t-trade{display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:7px;margin-bottom:6px;}
+.t-trade-ticker{color:var(--green);font-weight:700;min-width:48px;}
+.t-trade-amt{color:rgba(255,255,255,.5);min-width:52px;}
+.t-trade-reason{color:rgba(255,255,255,.55);font-size:11px;line-height:1.4;}
+
+/* ── Stats strip ── */
+.stats-strip{background:var(--navy2);border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06);}
+.stats-inner{max-width:1200px;margin:0 auto;padding:0 28px;display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,.06);}
+.stat-item{padding:22px 20px;background:var(--navy2);}
+.stat-val{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--white);letter-spacing:-.5px;line-height:1;}
+.stat-lbl{font-size:11px;color:rgba(255,255,255,.4);margin-top:4px;font-weight:500;}
+
+/* ── Sections ── */
+.section{padding:72px 0;}
+.section-inner{max-width:1200px;margin:0 auto;padding:0 28px;}
+.section-label{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--blue2);margin-bottom:8px;}
+.section-title{font-family:var(--font-display);font-size:clamp(26px,3vw,36px);font-weight:700;color:var(--navy);letter-spacing:-.5px;margin-bottom:12px;line-height:1.2;}
+.section-desc{font-size:15px;color:var(--text3);max-width:56ch;line-height:1.7;}
+.section-hd{margin-bottom:44px;}
+
+/* ── How it works ── */
+.how-bg{background:var(--bg);}
+.steps-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0;position:relative;}
+.steps-grid::before{content:'';position:absolute;top:28px;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,var(--border2),var(--border2),var(--border2),transparent);}
+.step{text-align:center;padding:0 12px;position:relative;}
+.step-num{width:56px;height:56px;border-radius:50%;background:var(--white);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--blue2);position:relative;z-index:1;}
+.step-num.active{background:var(--blue2);border-color:var(--blue2);color:var(--white);}
+.step-title{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px;}
+.step-desc{font-size:12px;color:var(--text3);line-height:1.5;}
+
+/* ── Value props ── */
+.vp-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.vp-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;}
+.vp-card.dark{background:var(--navy);border-color:transparent;}
+.vp-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;}
+.vp-title{font-size:17px;font-weight:700;color:var(--navy);margin-bottom:8px;letter-spacing:-.2px;}
+.vp-card.dark .vp-title{color:var(--white);}
+.vp-body{font-size:13px;color:var(--text3);line-height:1.7;}
+.vp-card.dark .vp-body{color:rgba(255,255,255,.55);}
+.vp-example{margin-top:14px;padding:12px 14px;background:var(--bg);border-radius:8px;font-size:12px;color:var(--text2);line-height:1.6;font-style:italic;border-left:3px solid var(--blue2);}
+.vp-card.dark .vp-example{background:rgba(255,255,255,.06);border-left-color:var(--blue3);color:rgba(255,255,255,.5);}
+
+/* ── Guardrails ── */
+.guardrails-bg{background:var(--bg);}
+.guardrails-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.guardrail-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+.guardrail-icon{font-size:22px;margin-bottom:10px;}
+.guardrail-title{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px;}
+.guardrail-val{font-size:20px;font-weight:700;font-family:var(--font-mono);color:var(--blue2);margin-bottom:4px;}
+.guardrail-desc{font-size:12px;color:var(--text3);line-height:1.5;}
+
+/* ── Tech stack ── */
+.stack-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.stack-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:18px;text-align:center;transition:all .2s;}
+.stack-card:hover{background:var(--white);box-shadow:var(--shadow);border-color:var(--border2);}
+.stack-icon{font-size:24px;margin-bottom:8px;}
+.stack-name{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:3px;}
+.stack-role{font-size:11px;color:var(--text3);}
+
+/* ── CTA section ── */
+.cta-section{background:var(--navy);padding:72px 0;}
+.cta-inner{max-width:700px;margin:0 auto;padding:0 28px;text-align:center;}
+.cta-title{font-family:var(--font-display);font-size:clamp(28px,4vw,42px);font-weight:700;color:var(--white);letter-spacing:-.5px;margin-bottom:14px;line-height:1.2;}
+.cta-desc{font-size:15px;color:rgba(255,255,255,.55);margin-bottom:32px;line-height:1.7;}
+.cta-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+
+/* ── Disclaimer ── */
+.disclaimer{padding:20px 28px;background:var(--bg);border-top:1px solid var(--border);font-size:11px;color:var(--text4);line-height:1.7;text-align:center;max-width:1200px;margin:0 auto;}
+
+/* ── Footer ── */
+footer{background:var(--navy);padding:24px 0;border-top:1px solid rgba(255,255,255,.06);}
+.footer-inner{max-width:1200px;margin:0 auto;padding:0 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.footer-copy{font-size:12px;color:rgba(255,255,255,.35);}
+.footer-links{display:flex;gap:14px;}
+.footer-links a{font-size:12px;color:rgba(255,255,255,.3);transition:color .15s;}
+.footer-links a:hover{color:rgba(255,255,255,.7);}
+
+@media(max-width:900px){
+  .hero-inner{grid-template-columns:1fr;gap:36px;}
+  .terminal{display:none;}
+  .steps-grid{grid-template-columns:1fr 1fr;gap:20px;}
+  .steps-grid::before{display:none;}
+  .vp-grid,.guardrails-grid,.stack-grid{grid-template-columns:1fr 1fr;}
+  .stats-inner{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:600px){
+  .vp-grid,.stack-grid{grid-template-columns:1fr;}
+  .guardrails-grid{grid-template-columns:1fr;}
+  .steps-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ── Shared Global Nav ───────────────────────────────────────────── */
+.g-nav{position:sticky;top:0;z-index:9000;background:rgba(255,255,255,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid #e2e8f0;height:60px;display:flex;align-items:center;font-family:'DM Sans',ui-sans-serif,system-ui,sans-serif;}
+.g-nav-inner{max-width:1200px;margin:0 auto;width:100%;padding:0 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.g-logo{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:#0d1b2e;letter-spacing:-.3px;text-decoration:none;}
+.g-logo-icon{width:34px;height:34px;background:#0d1b2e;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.g-logo-sub{font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:#64748b;display:block;margin-top:-2px;}
+.g-nav-links{display:flex;align-items:center;gap:2px;}
+.g-nav-links a{font-size:13px;font-weight:500;color:#334155;padding:6px 10px;border-radius:8px;transition:all .15s;text-decoration:none;white-space:nowrap;}
+.g-nav-links a:hover{color:#0d1b2e;background:#f1f5f9;}
+.g-nav-links a.active{color:#2563eb;background:#eff6ff;}
+.g-nav-cta{background:#0d1b2e!important;color:#fff!important;padding:8px 16px!important;border-radius:8px!important;font-weight:600!important;letter-spacing:-.1px;transition:background .15s!important;}
+.g-nav-cta:hover{background:#1a2d4a!important;}
+.g-pill{font-size:10px;font-weight:700;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;border-radius:999px;padding:2px 7px;letter-spacing:.04em;margin-left:4px;vertical-align:middle;}
+.g-pill-live{background:#f0fdf4;color:#15803d;border-color:#86efac;}
+@media(max-width:900px){.g-nav-links{display:none;}}
+/* ─────────────────────────────────────────────────────────────────── */
+</style>
+<header class="g-nav">
+  <div class="g-nav-inner">
+    <a href="/" class="g-logo">
+      <div class="g-logo-icon">
+        <svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="5" y="5" width="12" height="24" rx="2" fill="white" opacity=".85"/>
+          <path d="M5 5 C5 5 18 5 22 17 C26 29 18 29 5 29" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <ellipse cx="17" cy="17" rx="6" ry="9" fill="#3b82f6"/>
+        </svg>
+      </div>
+      <div>
+        <span>Didim Digital</span>
+        <span class="g-logo-sub">AI Product Consulting</span>
+      </div>
+    </a>
+    <nav class="g-nav-links">
+      <a href="/#tools">Tools</a>
+      <a href="/#experience">Experience</a>
+      <a href="/#platforms">Platforms</a>
+      <a href="/#about">About</a>
+      <a href="/csa-prep">CSA Prep</a>
+      <a href="/job-agent">Job Agent <span class="g-pill">AI</span></a>
+      <a href="/pia">PIA <span class="g-pill g-pill-live">LIVE</span></a>
+      <a href="/#contact" class="g-nav-cta">Let's Talk</a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-tag">Personal Investment Agent</div>
+      <h1>Your thesis.<br/><em>AI execution.</em><br/>Every week.</h1>
+      <p class="hero-lead">Write your investment thesis in plain English. Set a weekly allocation. PIA reads the thesis, analyzes current market conditions, and executes trades through Alpaca Markets — automatically, every Monday at 9:45am ET.</p>
+      <div class="hero-actions">
+        <a href="/pia-dashboard" target="_blank" class="btn-hero">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+          Open live dashboard
+        </a>
+        <a href="#how-it-works" class="btn-ghost">How it works →</a>
+      </div>
+    </div>
+
+    <!-- Terminal mockup -->
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="t-dot" style="background:#ff5f57;"></div>
+        <div class="t-dot" style="background:#febc2e;"></div>
+        <div class="t-dot" style="background:#28c840;"></div>
+        <span style="margin-left:8px;font-size:11px;color:rgba(255,255,255,.3);">PIA Agent · Monday 9:45am ET</span>
+      </div>
+      <div class="terminal-body">
+        <span class="t-comment">// Reading thesis from KV store...</span><br/>
+        <span class="t-key">thesis</span> <span style="color:rgba(255,255,255,.4);">→</span> <span class="t-str">"AI infrastructure 50% · Grid utilities 30%<br/>&nbsp;&nbsp;US growth 20%"</span><br/><br/>
+        <span class="t-comment">// Fetching portfolio state from Alpaca...</span><br/>
+        <span class="t-key">buying_power</span> <span style="color:rgba(255,255,255,.4);">→</span> <span class="t-num">$847.32</span><br/>
+        <span class="t-key">positions</span> <span style="color:rgba(255,255,255,.4);">→</span> <span class="t-num">4</span> open<br/><br/>
+        <span class="t-comment">// Calling Claude API for trade selection...</span><br/>
+        <span class="t-key">allocation</span> <span style="color:rgba(255,255,255,.4);">→</span> <span class="t-num">$100</span> this week<br/><br/>
+        <span class="t-label">Trades executed</span>
+        <div class="t-trade">
+          <span class="t-trade-ticker">EQIX</span>
+          <span class="t-trade-amt">+$52</span>
+          <span class="t-trade-reason">Equinix Q1 beat — AI workload demand accelerating, directly aligned with data center thesis</span>
+        </div>
+        <div class="t-trade">
+          <span class="t-trade-ticker">VST</span>
+          <span class="t-trade-amt">+$48</span>
+          <span class="t-trade-reason">Vistra securing long-term grid contracts to power new data centers — strong thesis fit</span>
+        </div>
+        <br/>
+        <span class="t-key">status</span> <span style="color:rgba(255,255,255,.4);">→</span> <span class="t-val">✓ 2 trades placed · $0 fees</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS STRIP -->
+<div class="stats-strip">
+  <div class="stats-inner">
+    <div class="stat-item"><div class="stat-val">$100</div><div class="stat-lbl">Weekly allocation cap</div></div>
+    <div class="stat-item"><div class="stat-val">$0.02</div><div class="stat-lbl">Per execution cost (AI + infra)</div></div>
+    <div class="stat-item"><div class="stat-val">−15%</div><div class="stat-lbl">Stop-loss per position</div></div>
+    <div class="stat-item"><div class="stat-val">20%</div><div class="stat-lbl">Max position size</div></div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="section how-bg" id="how-it-works">
+  <div class="section-inner">
+    <div class="section-hd" style="text-align:center;">
+      <div class="section-label">Process</div>
+      <h2 class="section-title" style="margin:0 auto 12px;">Five steps from thesis to trade</h2>
+      <p class="section-desc" style="margin:0 auto;">No coding. No Bloomberg terminal. No 9:30am alarm. Just write what you believe and let PIA execute it.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-num active">01</div>
+        <div class="step-title">Write your thesis</div>
+        <div class="step-desc">Plain English investment conviction — what you believe about the market over the next 12–24 months.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">Set allocation</div>
+        <div class="step-desc">Choose $50–$500 per week or month. This is the maximum PIA can deploy per cycle.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">Set guardrails</div>
+        <div class="step-desc">Position size limit, stop-loss threshold, sector exclusions. Hard-enforced before any order is placed.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-title">Agent executes</div>
+        <div class="step-desc">Every Monday 9:45am ET — Claude reads your thesis, checks market conditions, selects and places trades.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">05</div>
+        <div class="step-title">Read the reasoning</div>
+        <div class="step-desc">Every trade comes with Claude's plain-English explanation. Full audit trail. No black box.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VALUE PROPS -->
+<section class="section" id="why">
+  <div class="section-inner">
+    <div class="section-hd">
+      <div class="section-label">Why PIA</div>
+      <h2 class="section-title">Two value propositions. One product.</h2>
+      <p class="section-desc">PIA is valuable on two independent dimensions — either one alone would justify building it.</p>
+    </div>
+    <div class="vp-grid">
+      <div class="vp-card dark">
+        <div class="vp-icon" style="background:rgba(59,130,246,.15);">🧠</div>
+        <div class="vp-title">Superior pattern recognition</div>
+        <div class="vp-body">An LLM can identify correlations across geopolitical events, earnings data, macro cycles, sector rotations, and news sentiment simultaneously — at a breadth no individual analyst can match. It runs all the threads in parallel, every execution cycle.</div>
+        <div class="vp-example">Iran conflict → oil supply risk → energy rotation → risk-on momentum → broad market bid. A human analyst covers one thread. PIA runs all of them.</div>
+      </div>
+      <div class="vp-card">
+        <div class="vp-icon" style="background:var(--green-bg);">⚡</div>
+        <div class="vp-title">Emotion-free execution</div>
+        <div class="vp-body">The agent executes your thesis consistently every week — without panic-selling on a red Tuesday, FOMO-buying after a 30% run, or revenge-trading after a loss. The dollar allocation cap is the product's built-in risk circuit breaker.</div>
+        <div class="vp-example" style="border-left-color:var(--green-dark);">The agent is not smarter than the market. It is more consistent than the investor. That consistency, compounded over time, is the value.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GUARDRAILS -->
+<section class="section guardrails-bg" id="guardrails">
+  <div class="section-inner">
+    <div class="section-hd">
+      <div class="section-label">Risk Management</div>
+      <h2 class="section-title">Guardrails baked into the product</h2>
+      <p class="section-desc">Risk controls are enforced in the Worker code — not just advisory. Claude cannot bypass them.</p>
+    </div>
+    <div class="guardrails-grid">
+      <div class="guardrail-card">
+        <div class="guardrail-icon">🛡</div>
+        <div class="guardrail-title">Weekly allocation cap</div>
+        <div class="guardrail-val">$100/wk</div>
+        <div class="guardrail-desc">Maximum the agent can deploy per execution cycle. The known, affordable risk limit baked into the product design itself.</div>
+      </div>
+      <div class="guardrail-card">
+        <div class="guardrail-icon">📊</div>
+        <div class="guardrail-title">Position size limit</div>
+        <div class="guardrail-val">20% max</div>
+        <div class="guardrail-desc">No single holding can exceed 20% of the portfolio. Hard-enforced before the order reaches Alpaca. Claude cannot override this.</div>
+      </div>
+      <div class="guardrail-card">
+        <div class="guardrail-icon">🔴</div>
+        <div class="guardrail-title">Stop-loss enforcement</div>
+        <div class="guardrail-val">−15%</div>
+        <div class="guardrail-desc">Any position down more than 15% is automatically liquidated at the start of the next execution cycle. Proceeds returned to cash.</div>
+      </div>
+      <div class="guardrail-card">
+        <div class="guardrail-icon">🏦</div>
+        <div class="guardrail-title">Cash account only</div>
+        <div class="guardrail-val">No margin</div>
+        <div class="guardrail-desc">Cash account type avoids the Pattern Day Trader rule. No leverage. No margin calls. You can only lose what you put in.</div>
+      </div>
+      <div class="guardrail-card">
+        <div class="guardrail-icon">📋</div>
+        <div class="guardrail-title">Asset class restriction</div>
+        <div class="guardrail-val">US equities</div>
+        <div class="guardrail-desc">NYSE and NASDAQ equities only in Phase 1. No options, no leveraged ETFs, no crypto. Enforced via Claude's system prompt.</div>
+      </div>
+      <div class="guardrail-card">
+        <div class="guardrail-icon">⏸</div>
+        <div class="guardrail-title">One-tap pause</div>
+        <div class="guardrail-val">Instant</div>
+        <div class="guardrail-desc">Toggle from the dashboard stops all future executions immediately. Existing positions stay open. Resume at any time.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECH STACK -->
+<section class="section" id="tech">
+  <div class="section-inner">
+    <div class="section-hd">
+      <div class="section-label">Technology</div>
+      <h2 class="section-title">Built on real infrastructure</h2>
+      <p class="section-desc">Not a mockup. Every component below is live, deployed, and operational. $0 per week to run beyond the trading allocation.</p>
+    </div>
+    <div class="stack-grid">
+      <div class="stack-card">
+        <div class="stack-icon">🤖</div>
+        <div class="stack-name">Anthropic Claude</div>
+        <div class="stack-role">Thesis analysis · Trade selection · Plain-English reasoning</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">📈</div>
+        <div class="stack-name">Alpaca Markets</div>
+        <div class="stack-role">Commission-free brokerage · REST API · Paper + live trading</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">⚡</div>
+        <div class="stack-name">Cloudflare Workers</div>
+        <div class="stack-role">Serverless execution · KV storage · Cron triggers</div>
+      </div>
+      <div class="stack-card">
+        <div class="stack-icon">🌐</div>
+        <div class="stack-name">Hostinger</div>
+        <div class="stack-role">Static hosting · Dashboard delivery · CDN</div>
+      </div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div style="margin-top:32px;padding:16px 20px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--text3);line-height:1.7;">
+      <strong style="color:var(--text2);">Disclaimer:</strong> PIA is a technology demonstration project built by Robin Alexander Colocho. It is not investment advice. Trading in securities involves risk of loss. Past performance does not guarantee future results. Didim Digital and Robin Colocho are not registered investment advisors. Never invest money you cannot afford to lose.
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <div class="live-badge" style="margin:0 auto 20px;width:fit-content;"><span class="live-dot"></span>Live on paper trading now</div>
+    <h2 class="cta-title">See it running in real time.</h2>
+    <p class="cta-desc">The dashboard shows live portfolio positions, Claude's reasoning for every trade, and a full audit log. Paper trading mode uses real market prices with simulated money.</p>
+    <div class="cta-actions">
+      <a href="/pia-dashboard" target="_blank" class="btn-hero">Open live dashboard →</a>
+      <a href="/" class="btn-ghost">← Didim Digital</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-copy">© <span id="yr"></span> Didim Digital · Robin Alexander Colocho · PIA — Personal Investment Agent</div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/pia-dashboard" target="_blank">Dashboard</a>
+      <a href="/job-agent">Job Agent</a>
+      <a href="/csa-prep">CSA Prep</a>
+      <a href="https://solenetec.com" target="_blank">Solenetec</a>
+    </div>
+  </div>
+</footer>
+
+<script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+</body>
+</html>

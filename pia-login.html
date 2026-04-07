@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PIA · Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<script src="pia-auth.js"></script>
+
+<!-- Shared nav -->
+<style>
+.g-nav{position:sticky;top:0;z-index:9000;height:60px;width:100%;display:flex;align-items:center;padding:0 20px;background:rgba(255,255,255,.96);backdrop-filter:blur(16px);border-bottom:1px solid #e2e8f0;box-sizing:border-box;}
+.g-nav-logo{display:flex;align-items:center;gap:9px;text-decoration:none;flex-shrink:0;}
+.g-nav-logo-mark{width:28px;height:28px;background:#1d3557;border-radius:6px;display:flex;align-items:center;justify-content:center;position:relative;}
+.g-nav-logo-mark::before{content:'';position:absolute;width:16px;height:11px;border-radius:3px;background:#3b82f6;top:6px;left:6px;}
+.g-nav-logo-mark::after{content:'';position:absolute;width:8px;height:8px;border-radius:50%;background:#60a5fa;bottom:5px;right:4px;border:2px solid #1d3557;}
+.g-nav-logo-text{font-size:14px;font-weight:700;color:#1d3557;letter-spacing:-.3px;font-family:'DM Sans',sans-serif;}
+</style>
+<nav class="g-nav">
+  <a href="/" class="g-nav-logo">
+    <div class="g-nav-logo-mark"></div>
+    <span class="g-nav-logo-text">Didim Digital</span>
+  </a>
+</nav>
+
+<style>
+:root{
+  --bg:#f8fafc;--surface:#fff;--surface2:#f1f5f9;
+  --border:#e2e8f0;--border2:#cbd5e1;
+  --text:#0f172a;--text2:#475569;--text3:#94a3b8;
+  --accent:#1d3557;--accent2:#2a4a7a;
+  --blue:#3b82f6;--blue2:#60a5fa;--blue-bg:#eff6ff;
+  --green:#059669;--green2:#10b981;--green-bg:#f0fdf4;--green-border:#86efac;
+  --red:#dc2626;--red2:#ef4444;--red-bg:#fef2f2;--red-border:#fca5a5;
+  --amber:#d97706;--amber-bg:#fffbeb;--amber-border:#fde68a;
+  --font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+  --r:12px;--r2:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;}
+
+.page{min-height:calc(100vh - 60px);display:flex;align-items:center;justify-content:center;padding:32px 20px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 44px;width:100%;max-width:420px;box-shadow:0 4px 24px rgba(0,0,0,.06);}
+
+.card-logo{text-align:center;margin-bottom:28px;}
+.card-logo-icon{width:52px;height:52px;background:var(--accent);border-radius:14px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px;}
+.card-logo-icon svg{width:28px;height:28px;stroke:#fff;fill:none;stroke-width:2;}
+.card-title{font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.card-sub{font-size:14px;color:var(--text3);}
+
+/* Views */
+.view{display:none;}
+.view.active{display:block;}
+
+/* Form */
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.field input{width:100%;padding:11px 14px;border:1px solid var(--border2);border-radius:var(--r2);font-family:var(--font);font-size:15px;color:var(--text);background:var(--surface);transition:border-color .15s;}
+.field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,.1);}
+.field input::placeholder{color:var(--text3);}
+
+.btn{width:100%;padding:12px;border:none;border-radius:var(--r2);font-family:var(--font);font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;margin-top:4px;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:hover{background:var(--accent2);}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;}
+.btn-ghost{background:none;border:1px solid var(--border2);color:var(--text2);margin-top:10px;}
+.btn-ghost:hover{border-color:var(--blue);color:var(--blue);}
+
+.err{font-size:13px;color:var(--red2);background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--r2);padding:10px 12px;margin-bottom:14px;display:none;}
+.err.show{display:block;}
+.ok{font-size:13px;color:var(--green);background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--r2);padding:10px 12px;margin-bottom:14px;display:none;}
+.ok.show{display:block;}
+
+.divider{display:flex;align-items:center;gap:10px;margin:18px 0;}
+.divider hr{flex:1;border:none;border-top:1px solid var(--border);}
+.divider span{font-size:13px;color:var(--text3);}
+
+.link-btn{background:none;border:none;color:var(--blue);font-family:var(--font);font-size:14px;cursor:pointer;padding:0;text-decoration:underline;}
+.link-btn:hover{color:var(--accent);}
+
+/* MFA view */
+.mfa-icon{text-align:center;margin-bottom:20px;}
+.mfa-icon-wrap{width:56px;height:56px;background:var(--blue-bg);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;}
+.mfa-icon-wrap svg{width:28px;height:28px;stroke:var(--blue);fill:none;stroke-width:2;}
+.otp-input{font-family:var(--mono);font-size:24px;font-weight:700;letter-spacing:.3em;text-align:center;padding:14px;}
+
+/* MFA enroll QR */
+.qr-wrap{text-align:center;margin:16px 0;}
+.qr-wrap img{width:180px;height:180px;border:1px solid var(--border);border-radius:8px;padding:8px;background:#fff;}
+.secret-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);padding:10px 14px;font-family:var(--mono);font-size:13px;color:var(--text2);text-align:center;word-break:break-all;margin:10px 0;}
+
+/* Device badge */
+.device-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:var(--r2);margin-bottom:8px;}
+.device-dot{width:8px;height:8px;border-radius:50%;background:var(--green2);flex-shrink:0;}
+.device-name{font-size:14px;color:var(--text);flex:1;}
+.device-date{font-size:12px;color:var(--text3);font-family:var(--mono);}
+
+.footer-note{text-align:center;font-size:13px;color:var(--text3);margin-top:20px;line-height:1.6;}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="card">
+
+    <div class="card-logo">
+      <div class="card-logo-icon">
+        <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div class="card-title" id="card-title">Sign in to PIA</div>
+      <div class="card-sub" id="card-sub">Personal Investment Agent</div>
+    </div>
+
+    <!-- ── View: Email + Password ──────────────────── -->
+    <div class="view active" id="view-login">
+      <div class="err" id="login-err"></div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email"/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"
+               onkeydown="if(event.key==='Enter') submitLogin()"/>
+      </div>
+      <button class="btn btn-primary" id="login-btn" onclick="submitLogin()">Sign in</button>
+
+      <div class="divider"><hr/><span>or</span><hr/></div>
+
+      <div style="text-align:center;font-size:14px;color:var(--text3);">
+        <button class="link-btn" onclick="showView('view-magic')">Send magic link</button>
+        &nbsp;·&nbsp;
+        <button class="link-btn" onclick="showView('view-reset')">Forgot password?</button>
+      </div>
+    </div>
+
+    <!-- ── View: MFA Verify ────────────────────────── -->
+    <div class="view" id="view-mfa">
+      <div class="mfa-icon">
+        <div class="mfa-icon-wrap">
+          <svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+        </div>
+      </div>
+      <div style="text-align:center;font-size:14px;color:var(--text2);margin-bottom:20px;line-height:1.6;">
+        Open your authenticator app and enter the 6-digit code for <strong>PIA</strong>.
+      </div>
+      <div class="err" id="mfa-err"></div>
+      <div class="field">
+        <label>Authenticator code</label>
+        <input type="text" id="mfa-code" class="otp-input" placeholder="000 000"
+               maxlength="7" inputmode="numeric" autocomplete="one-time-code"
+               onkeydown="if(event.key==='Enter') submitMFA()"
+               oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,6)"/>
+      </div>
+      <button class="btn btn-primary" id="mfa-btn" onclick="submitMFA()">Verify</button>
+      <button class="btn btn-ghost" onclick="showView('view-login'); PIAAuth.signOut()">Back to sign in</button>
+    </div>
+
+    <!-- ── View: MFA Enroll ────────────────────────── -->
+    <div class="view" id="view-enroll">
+      <div style="font-size:14px;color:var(--text2);margin-bottom:16px;line-height:1.6;">
+        Scan this QR code with <strong>Google Authenticator</strong>, <strong>Authy</strong>, or <strong>1Password</strong>.
+      </div>
+      <div class="err" id="enroll-err"></div>
+      <div class="ok" id="enroll-ok"></div>
+      <div class="qr-wrap" id="qr-wrap">
+        <div style="font-size:13px;color:var(--text3);">Loading QR code…</div>
+      </div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:6px;text-align:center;">Or enter manually:</div>
+      <div class="secret-box" id="totp-secret">—</div>
+      <div class="field" style="margin-top:16px;">
+        <label>Enter 6-digit code to confirm</label>
+        <input type="text" id="enroll-code" class="otp-input" placeholder="000 000"
+               maxlength="7" inputmode="numeric" autocomplete="one-time-code"
+               onkeydown="if(event.key==='Enter') confirmEnroll()"
+               oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,6)"/>
+      </div>
+      <button class="btn btn-primary" id="enroll-btn" onclick="confirmEnroll()">Confirm &amp; enable MFA</button>
+      <button class="btn btn-ghost" onclick="skipEnroll()">Set up later</button>
+    </div>
+
+    <!-- ── View: Magic Link ────────────────────────── -->
+    <div class="view" id="view-magic">
+      <div style="font-size:14px;color:var(--text2);margin-bottom:16px;line-height:1.6;">
+        Enter your email and we'll send a one-click sign-in link. No password needed.
+      </div>
+      <div class="err" id="magic-err"></div>
+      <div class="ok" id="magic-ok"></div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="magic-email" placeholder="you@example.com" autocomplete="email"
+               onkeydown="if(event.key==='Enter') submitMagic()"/>
+      </div>
+      <button class="btn btn-primary" id="magic-btn" onclick="submitMagic()">Send magic link</button>
+      <button class="btn btn-ghost" onclick="showView('view-login')">Back to sign in</button>
+    </div>
+
+    <!-- ── View: Password Reset ────────────────────── -->
+    <div class="view" id="view-reset">
+      <div style="font-size:14px;color:var(--text2);margin-bottom:16px;line-height:1.6;">
+        Enter your email and we'll send a password reset link.
+      </div>
+      <div class="err" id="reset-err"></div>
+      <div class="ok" id="reset-ok"></div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="reset-email" placeholder="you@example.com" autocomplete="email"
+               onkeydown="if(event.key==='Enter') submitReset()"/>
+      </div>
+      <button class="btn btn-primary" id="reset-btn" onclick="submitReset()">Send reset link</button>
+      <button class="btn btn-ghost" onclick="showView('view-login')">Back to sign in</button>
+    </div>
+
+    <!-- ── View: Sent confirmation ─────────────────── -->
+    <div class="view" id="view-sent">
+      <div style="text-align:center;padding:20px 0;">
+        <div style="font-size:40px;margin-bottom:16px;">📬</div>
+        <div style="font-size:17px;font-weight:700;margin-bottom:8px;" id="sent-title">Check your email</div>
+        <div style="font-size:14px;color:var(--text3);line-height:1.6;" id="sent-body">
+          We sent a link to your email address. Click it to continue.
+        </div>
+        <button class="btn btn-ghost" style="margin-top:24px;" onclick="showView('view-login')">Back to sign in</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── View management ─────────────────────────────────────────────
+const titles = {
+  'view-login':  ['Sign in to PIA',            'Personal Investment Agent'],
+  'view-mfa':    ['Two-factor verification',    'Enter your authenticator code'],
+  'view-enroll': ['Set up authenticator',       'Secure your account with MFA'],
+  'view-magic':  ['Magic link sign in',         'No password required'],
+  'view-reset':  ['Reset your password',        ''],
+  'view-sent':   ['',                           ''],
+};
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id)?.classList.add('active');
+  const [title, sub] = titles[id] || ['', ''];
+  document.getElementById('card-title').textContent = title;
+  document.getElementById('card-sub').textContent   = sub;
+  // Focus first input in view
+  setTimeout(() => {
+    const input = document.getElementById(id)?.querySelector('input');
+    if (input) input.focus();
+  }, 50);
+}
+
+function setLoading(btnId, loading, label = 'Sign in') {
+  const btn = document.getElementById(btnId);
+  btn.disabled = loading;
+  btn.innerHTML = loading
+    ? `<span class="spinner"></span>Working…`
+    : label;
+}
+
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('show');
+}
+function clearErr(id) {
+  const el = document.getElementById(id);
+  el.textContent = '';
+  el.classList.remove('show');
+}
+function showOk(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+// ── Check URL params on load ─────────────────────────────────────
+const params = new URLSearchParams(window.location.search);
+if (params.get('mfa') === 'required') {
+  showView('view-mfa');
+}
+
+// ── Init Supabase auth ───────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  await new Promise(resolve => {
+    if (window._supabaseReady) return resolve();
+    document.addEventListener('pia:supabase:ready', resolve, { once: true });
+  });
+
+  PIAAuth._client = window.supabase.createClient(
+    'YOUR_SUPABASE_URL',
+    'YOUR_SUPABASE_ANON_KEY',
+    { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: 'pia_portal_session' } }
+  );
+
+  const { data: { session } } = await PIAAuth._client.auth.getSession();
+  PIAAuth._session = session;
+
+  if (session) {
+    // Session exists — check MFA status
+    const mfaStatus = await PIAAuth.getMFAStatus();
+    if (mfaStatus.enrolled && mfaStatus.verified) {
+      // Fully authenticated — go to dashboard
+      window.location.href = '/pia-dashboard';
+    } else if (mfaStatus.enrolled && !mfaStatus.verified) {
+      // Enrolled but not verified this session — show TOTP prompt
+      showView('view-mfa');
+    } else {
+      // Session exists but MFA not enrolled yet.
+      // Sign out so user goes through password login,
+      // which will then trigger enrollment AFTER auth.
+      await PIAAuth._client.auth.signOut();
+      PIAAuth._session = null;
+      showView('view-login');
+      document.getElementById('login-err').textContent =
+        'Please sign in with your password to set up your authenticator app.';
+      document.getElementById('login-err').classList.add('show');
+    }
+  }
+  // No session = show login form normally
+  sessionStorage.removeItem('pia_needs_enroll');
+});
+
+// Called after password sign-in
+async function checkSessionMFA(session) {
+  try {
+    const mfaStatus = await PIAAuth.getMFAStatus();
+    if (mfaStatus.enrolled && mfaStatus.verified) {
+      window.location.href = '/pia-dashboard';
+    } else if (mfaStatus.enrolled && !mfaStatus.verified) {
+      showView('view-mfa');
+      setTimeout(() => document.getElementById('mfa-code')?.focus(), 100);
+    } else {
+      // First login — enroll MFA now
+      await startEnroll();
+      showView('view-enroll');
+    }
+  } catch(e) {
+    console.error('MFA check failed:', e);
+    window.location.href = '/pia-dashboard';
+  }
+}
+
+// Listen for MFA required event
+document.addEventListener('pia:mfa:required', () => showView('view-mfa'));
+
+// ── Submit: email + password ─────────────────────────────────────
+async function submitLogin() {
+  clearErr('login-err');
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  if (!email || !pass) { showErr('login-err', 'Please enter your email and password.'); return; }
+
+  setLoading('login-btn', true, 'Sign in');
+  try {
+    const result = await PIAAuth.signIn(email, pass);
+    // Use unified MFA check for all sign-in paths
+    await checkSessionMFA(result.session);
+  } catch(e) {
+    showErr('login-err', e.message || 'Sign in failed — check your email and password.');
+  } finally {
+    setLoading('login-btn', false, 'Sign in');
+  }
+}
+
+// ── Submit: MFA code ─────────────────────────────────────────────
+async function submitMFA() {
+  clearErr('mfa-err');
+  const code = document.getElementById('mfa-code').value.trim();
+  if (code.length !== 6) { showErr('mfa-err', 'Enter a 6-digit code.'); return; }
+
+  setLoading('mfa-btn', true, 'Verify');
+  try {
+    await PIAAuth.challengeAndVerify(code);
+    window.location.href = '/pia-dashboard';
+  } catch(e) {
+    showErr('mfa-err', 'Incorrect code — check your app and try again.');
+    document.getElementById('mfa-code').value = '';
+    document.getElementById('mfa-code').focus();
+  } finally {
+    setLoading('mfa-btn', false, 'Verify');
+  }
+}
+
+// ── Start MFA enrollment ─────────────────────────────────────────
+let _enrollFactorId = null;
+
+async function startEnroll() {
+  try {
+    const data = await PIAAuth.enrollTOTP();
+    _enrollFactorId = data.id;
+
+    // Render QR code (Supabase returns SVG string)
+    const qrWrap = document.getElementById('qr-wrap');
+    if (data.totp?.qr_code) {
+      qrWrap.innerHTML = data.totp.qr_code; // SVG injected directly
+      qrWrap.querySelector('svg')?.setAttribute('width', '180');
+      qrWrap.querySelector('svg')?.setAttribute('height', '180');
+    }
+
+    // Show manual secret
+    document.getElementById('totp-secret').textContent = data.totp?.secret || '—';
+  } catch(e) {
+    showErr('enroll-err', 'Could not start enrollment: ' + e.message);
+  }
+}
+
+// ── Confirm MFA enrollment ────────────────────────────────────────
+async function confirmEnroll() {
+  clearErr('enroll-err');
+  const code = document.getElementById('enroll-code').value.trim();
+  if (code.length !== 6) { showErr('enroll-err', 'Enter the 6-digit code from your app.'); return; }
+  if (!_enrollFactorId) { showErr('enroll-err', 'Enrollment not started — refresh and try again.'); return; }
+
+  setLoading('enroll-btn', true, 'Confirm & enable MFA');
+  try {
+    const challenge = await PIAAuth.challengeTOTP(_enrollFactorId);
+    await PIAAuth.verifyTOTP(_enrollFactorId, challenge.id, code);
+    showOk('enroll-ok', '✓ MFA enabled — your account is now secured.');
+    document.getElementById('enroll-code').disabled = true;
+    document.getElementById('enroll-btn').disabled  = true;
+    setTimeout(() => { window.location.href = '/pia-dashboard'; }, 1500);
+  } catch(e) {
+    showErr('enroll-err', 'Incorrect code — open your app and try again.');
+    document.getElementById('enroll-code').value = '';
+    document.getElementById('enroll-code').focus();
+  } finally {
+    setLoading('enroll-btn', false, 'Confirm & enable MFA');
+  }
+}
+
+function skipEnroll() {
+  window.location.href = '/pia-dashboard';
+}
+
+// ── Submit: magic link ────────────────────────────────────────────
+async function submitMagic() {
+  clearErr('magic-err');
+  const email = document.getElementById('magic-email').value.trim();
+  if (!email) { showErr('magic-err', 'Enter your email address.'); return; }
+
+  setLoading('magic-btn', true, 'Send magic link');
+  try {
+    await PIAAuth.sendMagicLink(email);
+    showView('view-sent');
+    document.getElementById('sent-title').textContent = 'Check your email';
+    document.getElementById('sent-body').textContent  =
+      `We sent a sign-in link to ${email}. Click it to access your dashboard.`;
+  } catch(e) {
+    showErr('magic-err', e.message || 'Could not send link. Make sure this email is registered.');
+  } finally {
+    setLoading('magic-btn', false, 'Send magic link');
+  }
+}
+
+// ── Submit: password reset ────────────────────────────────────────
+async function submitReset() {
+  clearErr('reset-err');
+  const email = document.getElementById('reset-email').value.trim();
+  if (!email) { showErr('reset-err', 'Enter your email address.'); return; }
+
+  setLoading('reset-btn', true, 'Send reset link');
+  try {
+    await PIAAuth.sendPasswordReset(email);
+    showView('view-sent');
+    document.getElementById('sent-title').textContent = 'Reset link sent';
+    document.getElementById('sent-body').textContent  =
+      `We sent a password reset link to ${email}. Click it to set a new password.`;
+  } catch(e) {
+    showErr('reset-err', e.message || 'Could not send reset link.');
+  } finally {
+    setLoading('reset-btn', false, 'Send reset link');
+  }
+}
+</script>
+</body>
+</html>
